@@ -19,3 +19,9 @@ go run mian.go
 ```go
 ssh -t -p 23234 user@localhost
 ```
+
+### Packages
+- Bubbletea
+- Wish
+- Asciigraph
+- Gorilla websocket
