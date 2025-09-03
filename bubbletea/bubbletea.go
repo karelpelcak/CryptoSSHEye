@@ -167,13 +167,13 @@ func (m *model) render() {
 		span, pct, time.Now().Format(time.Kitchen))
 
 	infoUsdt := fmt.Sprintf("Last: %susdt  Min: %susdt  Max: %susdt",
-		utils.FormatFloatWithSpaces(m.last),
+		trendColor.Render(utils.FormatFloatWithSpaces(m.last)),
 		utils.FormatFloatWithSpaces(minV),
 		utils.FormatFloatWithSpaces(maxV),
 	)
 
 	infoCzk := fmt.Sprintf("Last: %sczk  Min: %sczk  Max: %sczk",
-		utils.FormatFloatWithSpaces(m.last*usdtToCzk),
+		trendColor.Render(utils.FormatFloatWithSpaces(m.last*usdtToCzk)),
 		utils.FormatFloatWithSpaces(minV*usdtToCzk),
 		utils.FormatFloatWithSpaces(maxV*usdtToCzk),
 	)
