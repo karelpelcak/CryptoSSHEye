@@ -3,6 +3,7 @@ package bubbletea
 import (
 	"fmt"
 	"math"
+	"strings"
 	"sync"
 	"time"
 
@@ -142,11 +143,18 @@ func (m *model) render() {
 
 	w := max(20, m.vp.Width-4)
 	h := max(8, min(20, m.vp.Height-6))
+
 	graph := asciigraph.Plot(m.prices,
 		asciigraph.Width(w),
 		asciigraph.Height(h),
-		asciigraph.Caption(trendColor.Render(fmt.Sprintf("BTC/USDT %.2f", m.last))),
+		asciigraph.Caption(fmt.Sprintf("BTC/USDT %.2f", m.last)),
 	)
+
+	lines := strings.Split(graph, "\n")
+	for i, line := range lines {
+		lines[i] = trendColor.Render(line)
+	}
+	graph = strings.Join(lines, "\n")
 
 	minV, maxV := stats(m.prices)
 	span := maxV - minV

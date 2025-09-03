@@ -61,7 +61,7 @@ func WsReader(ctx context.Context, out chan<- float64, logf func(string, ...any)
 			}
 
 			var tm struct {
-				C string `json:"c"` // current price
+				C string `json:"c"`
 			}
 			if err := json.Unmarshal(data, &tm); err != nil {
 				continue
@@ -71,11 +71,9 @@ func WsReader(ctx context.Context, out chan<- float64, logf func(string, ...any)
 				continue
 			}
 
-			logf("Price received: %.2f", v)
-
 			select {
 			case out <- v:
-			default: // drop if channel full
+			default:
 			case <-ctx.Done():
 				_ = c.Close()
 				return
