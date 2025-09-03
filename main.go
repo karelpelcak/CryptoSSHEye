@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/signal"
 	"strconv"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -30,6 +31,7 @@ import (
 const (
 	binanceWS = "wss://stream.binance.com:9443/ws/btcusdt@miniTicker"
 	maxPoints = 1800
+	usdtToCzk = 21
 )
 
 var (
@@ -209,6 +211,34 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
+func formatFloatWithSpaces(f float64) string {
+	s := fmt.Sprintf("%.2f", f)
+
+	parts := strings.Split(s, ".")
+	intPart := parts[0]
+	decPart := parts[1]
+
+	var result []string
+	for i, c := range reverse(intPart) {
+		if i != 0 && i%3 == 0 {
+			result = append(result, " ")
+		}
+		result = append(result, string(c))
+	}
+
+	intWithSpaces := reverse(strings.Join(result, ""))
+
+	return intWithSpaces + "." + decPart
+}
+
+func reverse(s string) string {
+	r := []rune(s)
+	for i, j := 0, len(r)-1; i < j; i, j = i+1, j-1 {
+		r[i], r[j] = r[j], r[i]
+	}
+	return string(r)
+}
+
 func (m *model) render() {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -242,11 +272,25 @@ func (m *model) render() {
 		pct = (m.prices[len(m.prices)-1] - m.prices[0]) / m.prices[0] * 100
 	}
 
-	info := fmt.Sprintf("Last: %.2f  Min: %.2f  Max: %.2f  Δ: %.2f (%.2f%%)  %s",
-		m.last, minV, maxV, span, pct, time.Now().Format(time.Kitchen))
+	infoGraph := fmt.Sprintf("Δ: %.2f (%.2f%%)  %s",
+		span, pct, time.Now().Format(time.Kitchen))
+
+	infoUsdt := fmt.Sprintf("Last: %susdt  Min: %susdt  Max: %susdt",
+		formatFloatWithSpaces(m.last),
+		formatFloatWithSpaces(minV),
+		formatFloatWithSpaces(maxV),
+	)
+
+	infoCzk := fmt.Sprintf("Last: %sczk  Min: %sczk  Max: %sczk",
+		formatFloatWithSpaces(m.last*usdtToCzk),
+		formatFloatWithSpaces(minV*usdtToCzk),
+		formatFloatWithSpaces(maxV*usdtToCzk),
+	)
 
 	content := "BTC/USDT Live Price"
-	content += "\n\n\n" + graph + "\n\n" + info
+	content += "\n\n\n" + graph + "\n\n" + infoGraph
+	content += "\n" + infoUsdt
+	content += "\n" + infoCzk
 	content += "\n\n" + m.help.View(m.km)
 	m.vp.SetContent(content)
 }
